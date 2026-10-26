@@ -15,6 +15,7 @@ Adding only one line here keeps merge conflicts between branches small.
 
 import api_client
 import display
+import ip_analysis
 
 
 # ---------------------------------------------------------------------------
@@ -40,6 +41,20 @@ def option_show_details():
     display.show_details(api_client.get_ip_details(ipv4))
 
 
+def option_lookup_ip():
+    """Look up details for any IP the user enters, with a technical analysis."""
+    result = ip_analysis.analyze_ip(input("Enter an IP address: "))
+    if not result["valid"]:
+        display.show_error(result["error"])
+        return
+
+    display.show_analysis(result)
+    if result["is_public"]:
+        display.show_details(api_client.get_ip_details(result["ip"]))
+    else:
+        print(f"Location lookup isn't possible for {result['type'].lower()} addresses.")
+
+
 # ---------------------------------------------------------------------------
 # Menu: "key": ("description shown to user", function_to_run)
 # Teammates: add your feature as a new line here.
@@ -48,6 +63,7 @@ MENU = {
     "1": ("Show my public IPv4 address", option_show_ipv4),
     "2": ("Show my public IPv6 address", option_show_ipv6),
     "3": ("Show full IP details (location, ISP, ASN)", option_show_details),
+    "4": ("Look up any IP address", option_lookup_ip),
 }
 
 

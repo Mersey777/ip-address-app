@@ -55,6 +55,17 @@ def show_details(details):
     print("-" * 40)
 
 
+def show_analysis(analysis):
+    """Print the analysis dict returned by ip_analysis.analyze_ip()."""
+    print("-" * 40)
+    print(f"{'IP Address':<13}: {analysis['ip']}")
+    print(f"{'IP Version':<13}: {analysis['version']}")
+    print(f"{'Type':<13}: {analysis['type']}")
+    if analysis["address_class"]:
+        print(f"{'Address Class':<13}: {analysis['address_class']}")
+    print("-" * 40)
+
+
 def show_error(message):
     """Print an error message."""
     print(f"[ERROR] {message}")
