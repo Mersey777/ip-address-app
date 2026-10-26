@@ -13,8 +13,11 @@ That's it -- the menu, input handling and error catching are already done.
 Adding only one line here keeps merge conflicts between branches small.
 """
 
+from datetime import datetime
+
 import api_client
 import display
+import exporter
 import ip_analysis
 
 
@@ -55,6 +58,21 @@ def option_lookup_ip():
         print(f"Location lookup isn't possible for {result['type'].lower()} addresses.")
 
 
+def option_export():
+    """Fetch both IPs and the details, then save them as JSON and CSV."""
+    ipv4 = api_client.get_public_ipv4()
+    ipv6 = api_client.get_public_ipv6()
+    details = api_client.get_ip_details(ipv4)
+    # One timestamp for both files so the .json and .csv pair up by name.
+    now = datetime.now()
+    report = exporter.build_report(ipv4, ipv6, details, now)
+    paths = [
+        exporter.export_json(report, timestamp=now),
+        exporter.export_csv(report, timestamp=now),
+    ]
+    display.show_saved_files(paths)
+
+
 # ---------------------------------------------------------------------------
 # Menu: "key": ("description shown to user", function_to_run)
 # Teammates: add your feature as a new line here.
@@ -64,6 +82,7 @@ MENU = {
     "2": ("Show my public IPv6 address", option_show_ipv6),
     "3": ("Show full IP details (location, ISP, ASN)", option_show_details),
     "4": ("Look up any IP address", option_lookup_ip),
+    "5": ("Export my IP details (JSON + CSV)", option_export),
 }
 
 

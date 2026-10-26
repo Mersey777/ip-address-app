@@ -2,12 +2,20 @@
 display.py
 Everything that prints to the screen lives here.
 
-The base version uses plain text on purpose. Enhanced formatting
-(colors, tables) is a separate feature: replace or extend the functions
-below and main.py will use them automatically.
+Output uses the rich library for colors, panels and tables. Function
+names and parameters are the same as the plain-text base version, so
+main.py and other features call them without any changes.
 """
 
+from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
+from rich.text import Text
+
 import config
+
+# One shared console for the whole app (tests capture its output).
+console = Console()
 
 # Fields shown in the "full details" view: (label, key in the API dict)
 DETAIL_FIELDS = [
@@ -28,31 +36,34 @@ DETAIL_FIELDS = [
 
 
 def show_header():
-    """Print the application banner."""
-    title = f"{config.APP_NAME} v{config.APP_VERSION}"
-    print("=" * len(title))
-    print(title)
-    print("=" * len(title))
+    """Print the application banner as a colored panel."""
+    title = Text(f"{config.APP_NAME} v{config.APP_VERSION}", style="bold cyan")
+    console.print(Panel(title, subtitle="DEVASC Project Activity 3",
+                        border_style="cyan", expand=False))
 
 
 def show_ip(label, ip):
-    """Print a single IP address, or a 'not available' message."""
+    """Print a single IP address in green, or 'not available' in yellow."""
+    line = Text(f"{label}: ", style="bold")
     if ip:
-        print(f"{label}: {ip}")
+        line.append(ip, style="green")
     else:
-        print(f"{label}: Not available on this network")
+        line.append("Not available on this network", style="yellow")
+    console.print(line)
 
 
 def show_details(details):
-    """Print the full details dictionary returned by get_ip_details()."""
-    width = max(len(label) for label, _ in DETAIL_FIELDS)
-    print("-" * 40)
+    """Print the details dict from get_ip_details() as a Field | Value table."""
+    table = Table(title="IP Details", title_style="bold cyan")
+    table.add_column("Field", style="cyan")
+    table.add_column("Value", style="white")
     for label, key in DETAIL_FIELDS:
         value = details.get(key)
         if value in (None, ""):
             value = "N/A"
-        print(f"{label:<{width}} : {value}")
-    print("-" * 40)
+        # Text() keeps API values from being read as rich markup.
+        table.add_row(label, Text(str(value)))
+    console.print(table)
 
 
 def show_analysis(analysis):
@@ -67,13 +78,24 @@ def show_analysis(analysis):
 
 
 def show_error(message):
-    """Print an error message."""
-    print(f"[ERROR] {message}")
+    """Print an error message in red."""
+    # Text() rather than a markup string, so brackets in the message
+    # (including the [ERROR] prefix or user input) print as-is.
+    console.print(Text(f"[ERROR] {message}", style="bold red"))
+
+
+def show_saved_files(paths):
+    """Print the paths of exported files."""
+    console.print(Text("Report saved:", style="bold green"))
+    for path in paths:
+        console.print(Text(f"  {path}", style="green"))
 
 
 def show_menu(menu):
     """Print the main menu. menu is the MENU dict from main.py."""
-    print()
+    console.print()
     for key, (description, _) in menu.items():
-        print(f"  [{key}] {description}")
-    print("  [q] Quit")
+        console.print(Text.assemble(("  [", "dim"), (key, "bold cyan"),
+                                    ("] ", "dim"), description))
+    console.print(Text.assemble(("  [", "dim"), ("q", "bold cyan"),
+                                ("] ", "dim"), "Quit"))
