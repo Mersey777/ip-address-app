@@ -55,7 +55,9 @@ def option_lookup_ip():
     if result["is_public"]:
         display.show_details(api_client.get_ip_details(result["ip"]))
     else:
-        print(f"Location lookup isn't possible for {result['type'].lower()} addresses.")
+        display.show_info(
+            f"Location lookup isn't possible for {result['type'].lower()} addresses."
+        )
 
 
 def option_export():

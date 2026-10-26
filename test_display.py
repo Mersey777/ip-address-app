@@ -32,6 +32,25 @@ class TestDisplay(unittest.TestCase):
         self.assertIn("AS64500", out)
         self.assertIn("N/A", out)  # fields missing from the dict
 
+    def test_show_analysis_table_ipv4(self):
+        out = self.capture(display.show_analysis, {
+            "ip": "192.168.1.1", "version": "IPv4",
+            "type": "Private", "address_class": "C"})
+        self.assertIn("IP Analysis", out)
+        self.assertIn("Private", out)
+        self.assertIn("Address Class", out)
+
+    def test_show_analysis_hides_class_for_ipv6(self):
+        out = self.capture(display.show_analysis, {
+            "ip": "2001:4860:4860::8888", "version": "IPv6",
+            "type": "Public", "address_class": None})
+        self.assertIn("IPv6", out)
+        self.assertNotIn("Address Class", out)
+
+    def test_show_info(self):
+        out = self.capture(display.show_info, "Location lookup isn't possible.")
+        self.assertIn("Location lookup isn't possible.", out)
+
     def test_show_error_keeps_prefix_and_ignores_markup(self):
         # Square brackets in user input must print as-is, not as rich markup.
         out = self.capture(display.show_error, "'[bold]x' is not a valid IP address.")

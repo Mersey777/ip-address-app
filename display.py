@@ -67,14 +67,24 @@ def show_details(details):
 
 
 def show_analysis(analysis):
-    """Print the analysis dict returned by ip_analysis.analyze_ip()."""
-    print("-" * 40)
-    print(f"{'IP Address':<13}: {analysis['ip']}")
-    print(f"{'IP Version':<13}: {analysis['version']}")
-    print(f"{'Type':<13}: {analysis['type']}")
+    """Print the analysis dict from ip_analysis.analyze_ip() as a table."""
+    table = Table(title="IP Analysis", title_style="bold cyan")
+    table.add_column("Field", style="cyan")
+    table.add_column("Value", style="white")
+    table.add_row("IP Address", Text(analysis["ip"]))
+    table.add_row("IP Version", analysis["version"])
+    # Public addresses in green, every other type in yellow.
+    type_style = "green" if analysis["type"] == "Public" else "yellow"
+    table.add_row("Type", Text(analysis["type"], style=type_style))
+    # Address classes only exist for IPv4.
     if analysis["address_class"]:
-        print(f"{'Address Class':<13}: {analysis['address_class']}")
-    print("-" * 40)
+        table.add_row("Address Class", analysis["address_class"])
+    console.print(table)
+
+
+def show_info(message):
+    """Print a neutral note to the user, such as why a lookup was skipped."""
+    console.print(Text(message, style="yellow"))
 
 
 def show_error(message):
